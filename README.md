@@ -31,9 +31,14 @@ A real-time AI video transformation application that uses StreamDiffusion to tra
    - Visit [Daydream API Key Generator](https://app.daydream.live/beta/api-key)
    - Create an API key using the passcode from Discord
 
-5. **Update the API key**
-   - Open `index.html`
-   - Replace `YOUR_API_KEY_HERE` with your actual API key
+5. **Configure the API key securely**
+   ```bash
+   # Copy the configuration template
+   cp config.template.js config.js
+   
+   # Edit config.js and replace YOUR_API_KEY_HERE with your actual API key
+   # NEVER commit config.js to version control!
+   ```
 
 ## 🎛️ How to Use
 
@@ -130,6 +135,17 @@ For issues and questions:
 - Check the troubleshooting section
 - Open an issue on GitHub
 - Join the Discord community
+
+## 🔒 Security
+
+**IMPORTANT**: This application requires API keys for functionality. Follow these security guidelines:
+
+- ✅ **Use the template system**: Copy `config.template.js` to `config.js`
+- ✅ **Never commit API keys**: `config.js` is automatically ignored by Git
+- ✅ **Keep keys secure**: Don't share API keys publicly
+- ✅ **Rotate regularly**: Change API keys periodically
+
+See [SECURITY.md](SECURITY.md) for detailed security guidelines.
 
 ## 🔗 Links
 

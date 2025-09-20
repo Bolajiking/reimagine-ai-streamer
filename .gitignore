@@ -105,6 +105,21 @@ logs
 tmp/
 temp/
 
-# API keys and secrets (if any)
+# API keys and secrets
+config.js
 config.json
 secrets.json
+.env
+.env.local
+.env.production
+.env.development
+
+# Sensitive configuration files
+*secret*
+*key*
+*credential*
+*password*
+
+# User-specific configuration
+user-config.js
+local-config.js

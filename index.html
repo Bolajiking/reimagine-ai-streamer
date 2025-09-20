@@ -714,11 +714,36 @@
         </div>
     </div>
 
+    <!-- Load configuration -->
+    <script src="config.js"></script>
+    
     <script>
-        // API Configuration
-        const API_KEY = 'sk_6Gh5VZQ5wpFiHGRUDnjrUgr9uDkA96GH7wAk4vxNzK2cLhc5uMLBznuATDqW6zwg';
-        const PIPELINE_ID = 'pip_qpUgXycjWF6YMeSL';
-        const API_BASE = 'https://api.daydream.live';
+        // Security check
+        if (!validateConfig()) {
+            document.body.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #000; color: #fff; text-align: center; padding: 20px;">
+                    <div>
+                        <h1 style="color: #ff6b6b; margin-bottom: 20px;">🔒 Configuration Required</h1>
+                        <p style="margin-bottom: 20px;">Please configure your API key before using REIMAGINE.</p>
+                        <ol style="text-align: left; max-width: 500px; margin: 0 auto;">
+                            <li>Get your API key from <a href="https://app.daydream.live/beta/api-key" target="_blank" style="color: #4CAF50;">Daydream API Key Generator</a></li>
+                            <li>Open <code>config.js</code> in your editor</li>
+                            <li>Replace <code>YOUR_API_KEY_HERE</code> with your actual API key</li>
+                            <li>Save the file and refresh this page</li>
+                        </ol>
+                        <p style="margin-top: 20px; font-size: 0.9em; opacity: 0.7;">
+                            For security, API keys are not stored in the main code files.
+                        </p>
+                    </div>
+                </div>
+            `;
+            throw new Error('API Key not configured');
+        }
+
+        // Use configuration
+        const API_KEY = CONFIG.API_KEY;
+        const PIPELINE_ID = CONFIG.PIPELINE_ID;
+        const API_BASE = CONFIG.API_BASE;
 
         // Global state
         let stream = null;
