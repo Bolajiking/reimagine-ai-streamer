@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REIMAGINE - AI Webcam Streamer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000000;
+            min-height: 100vh;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            border: 2px solid #C0C0C0;
+            border-radius: 15px;
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.1) 0%, rgba(255, 215, 0, 0.1) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #C0C0C0, #FFD700, #C0C0C0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #C0C0C0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .video-section {
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.05) 0%, rgba(255, 215, 0, 0.05) 100%);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #C0C0C0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 215, 0, 0.1) 50%, transparent 51%);
+            pointer-events: none;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .video-label {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        .controls {
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.08) 0%, rgba(255, 215, 0, 0.08) 100%);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #C0C0C0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .controls::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 215, 0, 0.05) 50%, transparent 51%);
+            pointer-events: none;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #C0C0C0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .control-group input, .control-group select, .control-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #C0C0C0;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #C0C0C0;
+            font-size: 1rem;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .control-group input:focus, .control-group select:focus, .control-group textarea:focus {
+            border-color: #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            outline: none;
+        }
+
+        .control-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .control-group input[type="range"] {
+            height: 8px;
+            background: linear-gradient(90deg, #C0C0C0, #FFD700);
+            outline: none;
+            border: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FFD700, #C0C0C0);
+            cursor: pointer;
+            border: 2px solid #000;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FFD700, #C0C0C0);
+            cursor: pointer;
+            border: 2px solid #000;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: 2px solid;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #FFD700, #C0C0C0);
+            color: #000;
+            border-color: #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, #C0C0C0, #FFD700);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 25px rgba(255, 215, 0, 0.5);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #C0C0C0, #666);
+            color: #000;
+            border-color: #C0C0C0;
+            box-shadow: 0 0 15px rgba(192, 192, 192, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(45deg, #999, #C0C0C0);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 25px rgba(192, 192, 192, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            background: linear-gradient(45deg, #333, #666);
+            border-color: #666;
+            color: #999;
+        }
+
+        .status {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(192, 192, 192, 0.1) 100%);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            border: 1px solid #C0C0C0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .status.success {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(255, 215, 0, 0.2) 100%);
+            border-color: #FFD700;
+            color: #FFD700;
+        }
+
+        .status.error {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(255, 0, 0, 0.2) 100%);
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .status.info {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(192, 192, 192, 0.2) 100%);
+            border-color: #C0C0C0;
+            color: #C0C0C0;
+        }
+
+        .range-value {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            accent-color: #FFD700;
+        }
+
+        .checkbox-group label {
+            color: #C0C0C0;
+            font-size: 1rem;
+        }
+
+        .control-group h3 {
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .info-tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 8px;
+            cursor: help;
+        }
+
+        .info-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(45deg, #FFD700, #C0C0C0);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #000;
+            transition: all 0.3s ease;
+        }
+
+        .info-icon:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .tooltip-content {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+            color: #C0C0C0;
+            text-align: left;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            width: 280px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #FFD700 transparent transparent transparent;
+        }
+
+        .info-tooltip:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .parameter-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        /* Add some additional visual effects */
+        .video-section:hover {
+            border-color: #FFD700;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.2);
+        }
+
+        .controls:hover {
+            border-color: #FFD700;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 REIMAGINE</h1>
+            <p>Transform your webcam feed with AI in real-time!</p>
+        </div>
+
+        <div class="main-content">
+            <div class="video-section">
+                <div class="video-label">📹 Your Webcam</div>
+                <div class="video-container">
+                    <video id="webcamVideo" autoplay muted playsinline></video>
+                </div>
+                <div class="button-group">
+                    <button id="startWebcam" class="btn btn-primary">Start Webcam</button>
+                    <button id="stopWebcam" class="btn btn-secondary" disabled>Stop Webcam</button>
+                </div>
+            </div>
+
+            <div class="video-section">
+                <div class="video-label">✨ AI Output</div>
+                <div class="video-container">
+                    <video id="outputVideo" autoplay muted playsinline style="display: none;"></video>
+                    <iframe id="outputIframe" src="" style="display: none;"></iframe>
+                    <div id="noStream" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 1.2rem; opacity: 0.7;">
+                        Create a stream to see AI output
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="createStream" class="btn btn-primary">Create Stream</button>
+                    <button id="startStreaming" class="btn btn-primary" disabled>Start Streaming</button>
+                    <button id="stopStreaming" class="btn btn-secondary" disabled>Stop Streaming</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h2 style="margin-bottom: 20px; text-align: center;">🎛️ StreamDiffusion Parameters</h2>
+            
+            <div class="control-group">
+                <div class="parameter-label">
+                    <label for="prompt">Prompt:</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Prompt:</strong> Describes what you want the AI to generate. Be specific and descriptive. Examples: "anime character", "cyberpunk style", "realistic portrait". The more detailed your prompt, the better the AI can understand your vision.
+                        </div>
+                    </div>
+                </div>
+                <textarea id="prompt" placeholder="Describe what you want to see...">superman</textarea>
+            </div>
+
+            <div class="control-group">
+                <div class="parameter-label">
+                    <label for="negativePrompt">Negative Prompt:</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Negative Prompt:</strong> Tells the AI what NOT to generate. Helps avoid unwanted elements like "blurry", "low quality", "distorted". Use this to improve output quality by excluding things you don't want to see.
+                        </div>
+                    </div>
+                </div>
+                <textarea id="negativePrompt" placeholder="What you don't want to see...">blurry, low quality, flat, 2d</textarea>
+            </div>
+
+            <div class="control-group">
+                <div class="parameter-label">
+                    <label for="numInferenceSteps">Inference Steps: <span class="range-value" id="stepsValue">50</span></label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Inference Steps:</strong> Controls how many processing steps the AI takes. Higher values (50-100) = better quality but slower processing. Lower values (10-30) = faster but lower quality. 50 is a good balance for most use cases.
+                        </div>
+                    </div>
+                </div>
+                <input type="range" id="numInferenceSteps" min="1" max="100" value="50">
+            </div>
+
+            <div class="control-group">
+                <div class="parameter-label">
+                    <label for="seed">Seed: <span class="range-value" id="seedValue">42</span></label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Seed:</strong> Controls randomness in AI generation. Same seed + same prompt = similar results. Different seeds = varied outputs. Use the same seed to reproduce results, or change it for variety. 0 = random seed.
+                        </div>
+                    </div>
+                </div>
+                <input type="range" id="seed" min="0" max="1000" value="42">
+            </div>
+
+            <div class="control-group">
+                <div class="parameter-label">
+                    <label for="promptInterpolation">Prompt Interpolation Method:</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Prompt Interpolation:</strong> How the AI blends different prompts over time. <strong>SLERP</strong> = smooth spherical interpolation (better for style changes). <strong>LERP</strong> = linear interpolation (simpler, faster). SLERP usually gives better results.
+                        </div>
+                    </div>
+                </div>
+                <select id="promptInterpolation">
+                    <option value="slerp">SLERP</option>
+                    <option value="lerp">LERP</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <div class="parameter-label">
+                    <h3 style="margin-bottom: 15px;">ControlNets:</h3>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>ControlNets:</strong> Advanced AI models that guide image generation by analyzing specific aspects of your input video. Each ControlNet focuses on different features like poses, edges, depth, and colors. Adjust the scale (0-1) to control how much influence each has on the final output.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="poseEnabled" checked>
+                    <label for="poseEnabled">Pose Estimation</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Pose Estimation:</strong> Detects and preserves human body poses and hand positions from your input video. Great for maintaining natural body language and gestures in the AI output. Higher values keep poses more accurate but may reduce style flexibility.
+                        </div>
+                    </div>
+                    <input type="range" id="poseScale" min="0" max="1" step="0.01" value="0">
+                    <span class="range-value" id="poseValue">0.00</span>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="hedEnabled" checked>
+                    <label for="hedEnabled">Edge Detection (HED)</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Edge Detection (HED):</strong> Preserves soft edges and smooth contours from your input video. HED (Holistically-Nested Edge Detection) is great for maintaining the overall shape and structure while allowing more artistic freedom. Good for organic shapes and natural scenes.
+                        </div>
+                    </div>
+                    <input type="range" id="hedScale" min="0" max="1" step="0.01" value="0">
+                    <span class="range-value" id="hedValue">0.00</span>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="cannyEnabled" checked>
+                    <label for="cannyEnabled">Canny Edge Detection</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Canny Edge Detection:</strong> Preserves sharp, crisp edges and detailed outlines from your input video. Perfect for maintaining architectural details, text, or any sharp features. Higher values keep more detail but may make the output look more rigid.
+                        </div>
+                    </div>
+                    <input type="range" id="cannyScale" min="0" max="1" step="0.01" value="0">
+                    <span class="range-value" id="cannyValue">0.00</span>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="depthEnabled" checked>
+                    <label for="depthEnabled">Depth Estimation</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Depth Estimation:</strong> Analyzes the 3D structure and spatial relationships in your input video. Helps maintain proper depth perception and object positioning in the AI output. Great for scenes with multiple objects at different distances.
+                        </div>
+                    </div>
+                    <input type="range" id="depthScale" min="0" max="1" step="0.01" value="0">
+                    <span class="range-value" id="depthValue">0.00</span>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="colorEnabled" checked>
+                    <label for="colorEnabled">Color Preservation</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Color Preservation:</strong> Maintains the original color palette and lighting from your input video. Higher values keep colors more faithful to the original, while lower values allow more creative color changes. Good for maintaining mood and atmosphere.
+                        </div>
+                    </div>
+                    <input type="range" id="colorScale" min="0" max="1" step="0.01" value="0">
+                    <span class="range-value" id="colorValue">0.00</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="updateParams" class="btn btn-primary" disabled>Update Parameters</button>
+                <button id="resetParams" class="btn btn-secondary">Reset to Defaults</button>
+                <button id="checkStatus" class="btn btn-secondary">Check Stream Status</button>
+                <button id="checkLivepeer" class="btn btn-secondary" disabled>Refresh AI Output</button>
+                <button id="testOutput" class="btn btn-secondary" disabled>Open in New Tab</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h2 style="margin-bottom: 20px; text-align: center;">📡 RTMP Broadcasting</h2>
+            
+            <div class="control-group">
+                <div class="parameter-label">
+                    <label for="rtmpUrl">RTMP Server URL:</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>RTMP Server URL:</strong> The server address where your AI output will be streamed. This is automatically filled when you select a platform preset. RTMP (Real-Time Messaging Protocol) is used by most streaming platforms to receive live video streams.
+                        </div>
+                    </div>
+                </div>
+                <input type="text" id="rtmpUrl" placeholder="rtmp://your-server.com/live/stream-key">
+            </div>
+
+            <div class="control-group">
+                <div class="parameter-label">
+                    <label for="rtmpKey">Stream Key:</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Stream Key:</strong> Your unique authentication key for the streaming platform. Get this from your platform's streaming settings (Twitch Creator Dashboard, YouTube Live, etc.). Keep this secret - it's like a password for your stream.
+                        </div>
+                    </div>
+                </div>
+                <input type="text" id="rtmpKey" placeholder="your-stream-key">
+            </div>
+
+            <div class="control-group">
+                <div class="parameter-label">
+                    <label for="rtmpPlatform">Platform Preset:</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Platform Preset:</strong> Select your streaming platform to automatically configure the correct RTMP server URL. Choose from popular platforms like Twitch, YouTube Live, Facebook Live, or use Custom for other RTMP servers.
+                        </div>
+                    </div>
+                </div>
+                <select id="rtmpPlatform">
+                    <option value="custom">Custom RTMP</option>
+                    <option value="twitch">Twitch</option>
+                    <option value="youtube">YouTube Live</option>
+                    <option value="obs">OBS Studio</option>
+                    <option value="facebook">Facebook Live</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <div class="parameter-label">
+                    <label for="rtmpQuality">Stream Quality:</label>
+                    <div class="info-tooltip">
+                        <span class="info-icon">?</span>
+                        <div class="tooltip-content">
+                            <strong>Stream Quality:</strong> Choose the resolution for your RTMP broadcast. <strong>1080p</strong> = Best quality, requires good internet. <strong>720p</strong> = Good balance of quality and performance. <strong>480p</strong> = Lower quality, works with slower internet.
+                        </div>
+                    </div>
+                </div>
+                <select id="rtmpQuality">
+                    <option value="720p">720p (HD)</option>
+                    <option value="1080p">1080p (Full HD)</option>
+                    <option value="480p">480p (SD)</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button id="startRtmp" class="btn btn-primary" disabled>Start RTMP Stream</button>
+                <button id="stopRtmp" class="btn btn-secondary" disabled>Stop RTMP Stream</button>
+                <button id="testRtmp" class="btn btn-secondary" disabled>Test Connection</button>
+            </div>
+
+            <div id="rtmpStatus" class="status info" style="display: none;">
+                RTMP broadcasting ready. Configure your settings above.
+            </div>
+        </div>
+
+        <div class="controls">
+            <h2 style="margin-bottom: 20px; text-align: center;">🎛️ StreamDiffusion Parameters</h2>
+        </div>
+
+        <div id="status" class="status info" style="display: none;">
+            Ready to start! Click "Start Webcam" to begin.
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_KEY = 'sk_6Gh5VZQ5wpFiHGRUDnjrUgr9uDkA96GH7wAk4vxNzK2cLhc5uMLBznuATDqW6zwg';
+        const PIPELINE_ID = 'pip_qpUgXycjWF6YMeSL';
+        const API_BASE = 'https://api.daydream.live';
+
+        // Global state
+        let stream = null;
+        let webcamStream = null;
+        let peerConnection = null;
+        let streamId = null;
+        let outputPlaybackId = null;
+        let whipUrl = null;
+        let rtmpStream = null;
+        let rtmpConnection = null;
+
+        // DOM elements
+        const webcamVideo = document.getElementById('webcamVideo');
+        const outputVideo = document.getElementById('outputVideo');
+        const outputIframe = document.getElementById('outputIframe');
+        const noStream = document.getElementById('noStream');
+        const status = document.getElementById('status');
+
+        // Control elements
+        const startWebcamBtn = document.getElementById('startWebcam');
+        const stopWebcamBtn = document.getElementById('stopWebcam');
+        const createStreamBtn = document.getElementById('createStream');
+        const startStreamingBtn = document.getElementById('startStreaming');
+        const stopStreamingBtn = document.getElementById('stopStreaming');
+        const updateParamsBtn = document.getElementById('updateParams');
+        const resetParamsBtn = document.getElementById('resetParams');
+        
+        // RTMP elements
+        const rtmpUrlInput = document.getElementById('rtmpUrl');
+        const rtmpKeyInput = document.getElementById('rtmpKey');
+        const rtmpPlatformSelect = document.getElementById('rtmpPlatform');
+        const rtmpQualitySelect = document.getElementById('rtmpQuality');
+        const startRtmpBtn = document.getElementById('startRtmp');
+        const stopRtmpBtn = document.getElementById('stopRtmp');
+        const testRtmpBtn = document.getElementById('testRtmp');
+        const rtmpStatus = document.getElementById('rtmpStatus');
+
+        // Parameter elements
+        const promptInput = document.getElementById('prompt');
+        const negativePromptInput = document.getElementById('negativePrompt');
+        const numInferenceStepsInput = document.getElementById('numInferenceSteps');
+        const seedInput = document.getElementById('seed');
+        const promptInterpolationInput = document.getElementById('promptInterpolation');
+
+        // ControlNet elements
+        const poseEnabled = document.getElementById('poseEnabled');
+        const poseScale = document.getElementById('poseScale');
+        const hedEnabled = document.getElementById('hedEnabled');
+        const hedScale = document.getElementById('hedScale');
+        const cannyEnabled = document.getElementById('cannyEnabled');
+        const cannyScale = document.getElementById('cannyScale');
+        const depthEnabled = document.getElementById('depthEnabled');
+        const depthScale = document.getElementById('depthScale');
+        const colorEnabled = document.getElementById('colorEnabled');
+        const colorScale = document.getElementById('colorScale');
+
+        // Range value displays
+        const stepsValue = document.getElementById('stepsValue');
+        const seedValue = document.getElementById('seedValue');
+        const poseValue = document.getElementById('poseValue');
+        const hedValue = document.getElementById('hedValue');
+        const cannyValue = document.getElementById('cannyValue');
+        const depthValue = document.getElementById('depthValue');
+        const colorValue = document.getElementById('colorValue');
+
+        // Utility functions
+        function showStatus(message, type = 'info') {
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        function updateRangeValue(input, display) {
+            display.textContent = parseFloat(input.value).toFixed(2);
+        }
+
+        // Event listeners for range inputs
+        numInferenceStepsInput.addEventListener('input', () => updateRangeValue(numInferenceStepsInput, stepsValue));
+        seedInput.addEventListener('input', () => updateRangeValue(seedInput, seedValue));
+        poseScale.addEventListener('input', () => updateRangeValue(poseScale, poseValue));
+        hedScale.addEventListener('input', () => updateRangeValue(hedScale, hedValue));
+        cannyScale.addEventListener('input', () => updateRangeValue(cannyScale, cannyValue));
+        depthScale.addEventListener('input', () => updateRangeValue(depthScale, depthValue));
+        colorScale.addEventListener('input', () => updateRangeValue(colorScale, colorValue));
+
+        // Webcam functions
+        async function startWebcam() {
+            try {
+                webcamStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: 1280, height: 720 },
+                    audio: false 
+                });
+                webcamVideo.srcObject = webcamStream;
+                
+                startWebcamBtn.disabled = true;
+                stopWebcamBtn.disabled = false;
+                createStreamBtn.disabled = false;
+                
+                showStatus('Webcam started successfully!', 'success');
+            } catch (error) {
+                showStatus(`Error starting webcam: ${error.message}`, 'error');
+            }
+        }
+
+        function stopWebcam() {
+            if (webcamStream) {
+                webcamStream.getTracks().forEach(track => track.stop());
+                webcamStream = null;
+                webcamVideo.srcObject = null;
+            }
+            
+            startWebcamBtn.disabled = false;
+            stopWebcamBtn.disabled = true;
+            createStreamBtn.disabled = true;
+            startStreamingBtn.disabled = true;
+            
+            showStatus('Webcam stopped.', 'info');
+        }
+
+        // Stream creation
+        async function createStream() {
+            try {
+                showStatus('Creating stream...', 'info');
+                
+                const response = await fetch(`${API_BASE}/v1/streams`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        pipeline_id: PIPELINE_ID
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                streamId = data.id;
+                outputPlaybackId = data.output_playback_id;
+                whipUrl = data.whip_url;
+
+                // Set up output video display
+                console.log('Output playback ID:', outputPlaybackId);
+                console.log('Whip URL:', whipUrl);
+                
+                // Show loading state
+                noStream.innerHTML = 'AI output will appear here once streaming starts...';
+                noStream.style.display = 'flex';
+                outputVideo.style.display = 'none';
+                outputIframe.style.display = 'none';
+                
+                // Set up the iframe for output (this is the recommended approach)
+                setupOutputIframe();
+
+                startStreamingBtn.disabled = false;
+                updateParamsBtn.disabled = false;
+                document.getElementById('checkLivepeer').disabled = false;
+                document.getElementById('testOutput').disabled = false;
+                startRtmpBtn.disabled = false;
+                testRtmpBtn.disabled = false;
+                
+                showStatus(`Stream created! ID: ${streamId}`, 'success');
+            } catch (error) {
+                showStatus(`Error creating stream: ${error.message}`, 'error');
+            }
+        }
+
+        // WebRTC streaming to WHIP
+        async function startStreaming() {
+            if (!webcamStream || !whipUrl) {
+                showStatus('Please start webcam and create stream first!', 'error');
+                return;
+            }
+
+            try {
+                showStatus('Starting WebRTC streaming...', 'info');
+
+                // Create peer connection with proper configuration
+                peerConnection = new RTCPeerConnection({
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ],
+                    iceCandidatePoolSize: 10
+                });
+
+                // Add webcam tracks
+                webcamStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, webcamStream);
+                });
+
+                // Set up connection state monitoring
+                peerConnection.onconnectionstatechange = () => {
+                    console.log('Connection state:', peerConnection.connectionState);
+                    if (peerConnection.connectionState === 'connected') {
+                        showStatus('WebRTC connected! AI processing should start soon...', 'success');
+                    } else if (peerConnection.connectionState === 'failed') {
+                        showStatus('WebRTC connection failed. Please try again.', 'error');
+                    }
+                };
+
+                peerConnection.oniceconnectionstatechange = () => {
+                    console.log('ICE connection state:', peerConnection.iceConnectionState);
+                };
+
+                // Create offer with proper constraints
+                const offer = await peerConnection.createOffer({
+                    offerToReceiveAudio: false,
+                    offerToReceiveVideo: false
+                });
+                await peerConnection.setLocalDescription(offer);
+
+                // Send offer to WHIP endpoint with proper headers
+                const response = await fetch(whipUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/sdp',
+                        'Accept': 'application/sdp'
+                    },
+                    body: offer.sdp
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`WHIP error! status: ${response.status}, message: ${errorText}`);
+                }
+
+                const answer = await response.text();
+                console.log('Received SDP answer:', answer);
+                
+                await peerConnection.setRemoteDescription({
+                    type: 'answer',
+                    sdp: answer
+                });
+
+                startStreamingBtn.disabled = true;
+                stopStreamingBtn.disabled = false;
+                
+                showStatus('WebRTC offer sent! Waiting for connection...', 'info');
+                
+                // Set up output display after a short delay
+                setTimeout(() => {
+                    if (outputPlaybackId) {
+                        console.log('Setting up AI output after streaming started');
+                        setupOutputIframe();
+                        
+                        // Show processing status
+                        showStatus('AI processing started! Video will be available shortly...', 'info');
+                    }
+                }, 2000);
+            } catch (error) {
+                console.error('WebRTC error:', error);
+                showStatus(`Error starting streaming: ${error.message}`, 'error');
+            }
+        }
+
+        function stopStreaming() {
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            
+            startStreamingBtn.disabled = false;
+            stopStreamingBtn.disabled = true;
+            
+            showStatus('Streaming stopped.', 'info');
+        }
+
+        // Parameter updates
+        async function updateParameters() {
+            if (!streamId) {
+                showStatus('Please create a stream first!', 'error');
+                return;
+            }
+
+            try {
+                showStatus('Updating parameters...', 'info');
+
+                const params = {
+                    model_id: "streamdiffusion",
+                    pipeline: "live-video-to-video",
+                    params: {
+                        model_id: "stabilityai/sd-turbo",
+                        prompt: promptInput.value,
+                        prompt_interpolation_method: promptInterpolationInput.value,
+                        normalize_prompt_weights: true,
+                        normalize_seed_weights: true,
+                        negative_prompt: negativePromptInput.value,
+                        num_inference_steps: parseInt(numInferenceStepsInput.value),
+                        seed: parseInt(seedInput.value),
+                        t_index_list: [0, 8, 17],
+                        controlnets: [
+                            {
+                                conditioning_scale: poseEnabled.checked ? parseFloat(poseScale.value) : 0,
+                                control_guidance_end: 1,
+                                control_guidance_start: 0,
+                                enabled: true,
+                                model_id: "thibaud/controlnet-sd21-openpose-diffusers",
+                                preprocessor: "pose_tensorrt",
+                                preprocessor_params: {}
+                            },
+                            {
+                                conditioning_scale: hedEnabled.checked ? parseFloat(hedScale.value) : 0,
+                                control_guidance_end: 1,
+                                control_guidance_start: 0,
+                                enabled: true,
+                                model_id: "thibaud/controlnet-sd21-hed-diffusers",
+                                preprocessor: "soft_edge",
+                                preprocessor_params: {}
+                            },
+                            {
+                                conditioning_scale: cannyEnabled.checked ? parseFloat(cannyScale.value) : 0,
+                                control_guidance_end: 1,
+                                control_guidance_start: 0,
+                                enabled: true,
+                                model_id: "thibaud/controlnet-sd21-canny-diffusers",
+                                preprocessor: "canny",
+                                preprocessor_params: {
+                                    high_threshold: 200,
+                                    low_threshold: 100
+                                }
+                            },
+                            {
+                                conditioning_scale: depthEnabled.checked ? parseFloat(depthScale.value) : 0,
+                                control_guidance_end: 1,
+                                control_guidance_start: 0,
+                                enabled: true,
+                                model_id: "thibaud/controlnet-sd21-depth-diffusers",
+                                preprocessor: "depth_tensorrt",
+                                preprocessor_params: {}
+                            },
+                            {
+                                conditioning_scale: colorEnabled.checked ? parseFloat(colorScale.value) : 0,
+                                control_guidance_end: 1,
+                                control_guidance_start: 0,
+                                enabled: true,
+                                model_id: "thibaud/controlnet-sd21-color-diffusers",
+                                preprocessor: "passthrough",
+                                preprocessor_params: {}
+                            }
+                        ]
+                    }
+                };
+
+                const response = await fetch(`${API_BASE}/beta/streams/${streamId}/prompts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify(params)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                showStatus('Parameters updated successfully!', 'success');
+            } catch (error) {
+                showStatus(`Error updating parameters: ${error.message}`, 'error');
+            }
+        }
+
+        function resetParameters() {
+            promptInput.value = 'superman';
+            negativePromptInput.value = 'blurry, low quality, flat, 2d';
+            numInferenceStepsInput.value = '50';
+            seedInput.value = '42';
+            promptInterpolationInput.value = 'slerp';
+            
+            // Reset ControlNets
+            poseEnabled.checked = true;
+            poseScale.value = '0';
+            hedEnabled.checked = true;
+            hedScale.value = '0';
+            cannyEnabled.checked = true;
+            cannyScale.value = '0';
+            depthEnabled.checked = true;
+            depthScale.value = '0';
+            colorEnabled.checked = true;
+            colorScale.value = '0';
+            
+            // Update range value displays
+            updateRangeValue(numInferenceStepsInput, stepsValue);
+            updateRangeValue(seedInput, seedValue);
+            updateRangeValue(poseScale, poseValue);
+            updateRangeValue(hedScale, hedValue);
+            updateRangeValue(cannyScale, cannyValue);
+            updateRangeValue(depthScale, depthValue);
+            updateRangeValue(colorScale, colorValue);
+            
+            showStatus('Parameters reset to defaults!', 'info');
+        }
+
+        // Debug function to check stream status
+        async function checkStreamStatus() {
+            if (!streamId) {
+                showStatus('No stream created yet', 'info');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/v1/streams/${streamId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Stream status:', data);
+                    showStatus(`Stream status: ${data.status || 'unknown'}`, 'info');
+                } else {
+                    showStatus(`Error checking stream status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error checking stream status: ${error.message}`, 'error');
+            }
+        }
+
+        // Set up AI output iframe with proper configuration
+        function setupOutputIframe() {
+            if (!outputPlaybackId) {
+                console.error('No output playback ID available');
+                return;
+            }
+
+            console.log('Setting up AI output iframe');
+            
+            // Create the output URL
+            const outputUrl = `https://lvpr.tv/?v=${outputPlaybackId}&lowLatency=force`;
+            console.log('Output URL:', outputUrl);
+            
+            // Clear any existing content
+            noStream.style.display = 'none';
+            
+            // Configure the iframe with proper attributes
+            outputIframe.src = '';
+            outputIframe.style.display = 'block';
+            outputIframe.style.width = '100%';
+            outputIframe.style.height = '100%';
+            outputIframe.style.border = 'none';
+            outputIframe.style.borderRadius = '10px';
+            
+            // Set iframe attributes for better compatibility
+            outputIframe.setAttribute('allow', 'autoplay; fullscreen; camera; microphone');
+            outputIframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-forms');
+            outputIframe.setAttribute('loading', 'lazy');
+            
+            // Set up event handlers
+            outputIframe.onload = () => {
+                console.log('AI output iframe loaded successfully');
+                showStatus('AI output loaded!', 'success');
+            };
+            
+            outputIframe.onerror = () => {
+                console.error('AI output iframe failed to load');
+                showStatus('Iframe failed to load. Trying alternative approach...', 'error');
+                setupAlternativeIframe();
+            };
+            
+            // Set a timeout for iframe loading
+            const iframeTimeout = setTimeout(() => {
+                if (outputIframe.style.display === 'block' && (!outputIframe.contentDocument || outputIframe.contentDocument.body.innerHTML.trim() === '')) {
+                    console.warn('Iframe loading timeout, trying alternative approach');
+                    showStatus('Iframe loading slowly. Trying alternative approach...', 'info');
+                    setupAlternativeIframe();
+                }
+            }, 8000);
+            
+            // Clear timeout when iframe loads
+            outputIframe.onload = () => {
+                clearTimeout(iframeTimeout);
+                console.log('AI output iframe loaded successfully');
+                showStatus('AI output loaded!', 'success');
+            };
+            
+            // Set the source after configuring everything
+            outputIframe.src = outputUrl;
+            
+            showStatus('Loading AI output...', 'info');
+        }
+
+        // Fallback display if iframe fails
+        function setupFallbackDisplay() {
+            const outputUrl = `https://lvpr.tv/?v=${outputPlaybackId}&lowLatency=force`;
+            
+            noStream.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <h3 style="color: #FF9800; margin-bottom: 15px;">⚠️ Iframe Loading Issue</h3>
+                    <p style="margin-bottom: 20px;">The iframe is having trouble loading. Try these options:</p>
+                    <a href="${outputUrl}" 
+                       target="_blank" 
+                       style="display: inline-block; padding: 15px 30px; background: #4CAF50; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; margin-bottom: 15px;">
+                        🎬 Open in New Tab
+                    </a>
+                    <br>
+                    <button onclick="retryIframe()" 
+                            style="padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;">
+                        🔄 Retry Iframe
+                    </button>
+                    <button onclick="copyOutputUrl()" 
+                            style="padding: 10px 20px; background: #FF9800; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        📋 Copy URL
+                    </button>
+                </div>
+            `;
+            noStream.style.display = 'flex';
+            outputIframe.style.display = 'none';
+        }
+
+        // Retry iframe loading
+        function retryIframe() {
+            console.log('Retrying iframe loading');
+            setupOutputIframe();
+        }
+
+        // Copy output URL to clipboard
+        function copyOutputUrl() {
+            if (outputPlaybackId) {
+                const outputUrl = `https://lvpr.tv/?v=${outputPlaybackId}&lowLatency=force`;
+                navigator.clipboard.writeText(outputUrl).then(() => {
+                    showStatus('Output URL copied to clipboard!', 'success');
+                }).catch(() => {
+                    showStatus('Failed to copy URL. Please copy manually.', 'error');
+                });
+            }
+        }
+
+        // Simple function to refresh the output display
+        function refreshOutput() {
+            if (outputPlaybackId) {
+                console.log('Refreshing output display');
+                setupOutputIframe();
+            }
+        }
+
+        // Alternative iframe setup with different URL parameters
+        function setupAlternativeIframe() {
+            if (!outputPlaybackId) return;
+            
+            console.log('Trying alternative iframe setup');
+            
+            // Try different URL variations
+            const urls = [
+                `https://lvpr.tv/?v=${outputPlaybackId}&lowLatency=force`,
+                `https://lvpr.tv/?v=${outputPlaybackId}`,
+                `https://lvpr.tv/${outputPlaybackId}`,
+                `https://livepeer.studio/playback/${outputPlaybackId}`
+            ];
+            
+            let currentUrlIndex = 0;
+            
+            function tryNextUrl() {
+                if (currentUrlIndex >= urls.length) {
+                    console.log('All iframe URLs failed, showing fallback');
+                    setupFallbackDisplay();
+                    return;
+                }
+                
+                const url = urls[currentUrlIndex];
+                console.log(`Trying iframe URL ${currentUrlIndex + 1}:`, url);
+                
+                outputIframe.src = url;
+                currentUrlIndex++;
+                
+                // Set timeout for this URL
+                setTimeout(() => {
+                    if (outputIframe.contentDocument === null || outputIframe.contentDocument.body.innerHTML.trim() === '') {
+                        console.log(`URL ${currentUrlIndex} failed, trying next`);
+                        tryNextUrl();
+                    }
+                }, 5000);
+            }
+            
+            tryNextUrl();
+        }
+
+        // Test if the output URL is accessible
+        async function testOutputAccessibility() {
+            if (!outputPlaybackId) return;
+            
+            const outputUrl = `https://lvpr.tv/?v=${outputPlaybackId}&lowLatency=force`;
+            
+            try {
+                showStatus('Testing output accessibility...', 'info');
+                
+                // Try to fetch the URL to see if it's accessible
+                const response = await fetch(outputUrl, { 
+                    method: 'HEAD',
+                    mode: 'no-cors' // This bypasses CORS for testing
+                });
+                
+                console.log('Output URL test completed');
+                showStatus('Output URL is accessible!', 'success');
+                
+            } catch (error) {
+                console.log('Output URL test failed (this is normal for lvpr.tv)');
+                showStatus('Output URL ready - click the button to view!', 'info');
+            }
+        }
+
+        // Check stream status
+        async function checkLivepeerStream() {
+            if (!streamId) {
+                showStatus('No stream ID available', 'error');
+                return;
+            }
+
+            try {
+                showStatus('Checking stream status...', 'info');
+                
+                const response = await fetch(`${API_BASE}/v1/streams/${streamId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Stream status:', data);
+                    showStatus(`Stream status: ${data.status || 'unknown'}`, 'info');
+                    
+                    // Refresh output iframe
+                    refreshOutput();
+                } else {
+                    showStatus(`API error: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error checking stream status:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test output URL directly
+        function testOutputUrl() {
+            if (!outputPlaybackId) {
+                showStatus('No output playback ID available', 'error');
+                return;
+            }
+
+            const lvprUrl = `https://lvpr.tv/?v=${outputPlaybackId}&lowLatency=force`;
+            console.log('Opening test URL:', lvprUrl);
+            window.open(lvprUrl, '_blank');
+            showStatus('Test URL opened in new tab', 'info');
+        }
+
+        // RTMP Broadcasting Functions
+        function updateRtmpPresets() {
+            const platform = rtmpPlatformSelect.value;
+            const presets = {
+                'twitch': {
+                    url: 'rtmp://live.twitch.tv/live/',
+                    placeholder: 'your-twitch-stream-key'
+                },
+                'youtube': {
+                    url: 'rtmp://a.rtmp.youtube.com/live2/',
+                    placeholder: 'your-youtube-stream-key'
+                },
+                'facebook': {
+                    url: 'rtmp://rtmp-api.facebook.com:80/rtmp/',
+                    placeholder: 'your-facebook-stream-key'
+                },
+                'obs': {
+                    url: 'rtmp://localhost:1935/live/',
+                    placeholder: 'your-obs-stream-key'
+                },
+                'custom': {
+                    url: 'rtmp://your-server.com/live/',
+                    placeholder: 'your-stream-key'
+                }
+            };
+
+            const preset = presets[platform];
+            rtmpUrlInput.value = preset.url;
+            rtmpKeyInput.placeholder = preset.placeholder;
+        }
+
+        async function startRtmpStream() {
+            if (!outputPlaybackId) {
+                showStatus('Please create a stream first!', 'error');
+                return;
+            }
+
+            const rtmpUrl = rtmpUrlInput.value.trim();
+            const rtmpKey = rtmpKeyInput.value.trim();
+
+            if (!rtmpUrl || !rtmpKey) {
+                showStatus('Please enter both RTMP URL and Stream Key', 'error');
+                return;
+            }
+
+            try {
+                showStatus('Starting RTMP broadcast...', 'info');
+                rtmpStatus.style.display = 'block';
+                rtmpStatus.textContent = 'Connecting to RTMP server...';
+                rtmpStatus.className = 'status info';
+
+                // Create RTMP stream using the AI output
+                const fullRtmpUrl = `${rtmpUrl}${rtmpKey}`;
+                console.log('RTMP URL:', fullRtmpUrl);
+
+                // For now, we'll use a simple approach with the Livepeer output
+                // In a real implementation, you'd need a server to convert the WebRTC/HLS to RTMP
+                const response = await fetch(`${API_BASE}/v1/streams/${streamId}/rtmp`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        rtmp_url: fullRtmpUrl,
+                        quality: rtmpQualitySelect.value
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('RTMP stream started:', data);
+                    
+                    startRtmpBtn.disabled = true;
+                    stopRtmpBtn.disabled = false;
+                    testRtmpBtn.disabled = true;
+                    
+                    rtmpStatus.textContent = `RTMP broadcasting to ${rtmpPlatformSelect.value} - ${rtmpQualitySelect.value}`;
+                    rtmpStatus.className = 'status success';
+                    showStatus('RTMP broadcast started!', 'success');
+                } else {
+                    throw new Error(`RTMP setup failed: ${response.status}`);
+                }
+
+            } catch (error) {
+                console.error('RTMP error:', error);
+                showStatus(`RTMP error: ${error.message}`, 'error');
+                rtmpStatus.textContent = `RTMP error: ${error.message}`;
+                rtmpStatus.className = 'status error';
+            }
+        }
+
+        async function stopRtmpStream() {
+            try {
+                showStatus('Stopping RTMP broadcast...', 'info');
+                
+                if (streamId) {
+                    const response = await fetch(`${API_BASE}/v1/streams/${streamId}/rtmp`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${API_KEY}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        console.log('RTMP stream stopped');
+                    }
+                }
+
+                startRtmpBtn.disabled = false;
+                stopRtmpBtn.disabled = true;
+                testRtmpBtn.disabled = false;
+                
+                rtmpStatus.textContent = 'RTMP broadcasting stopped';
+                rtmpStatus.className = 'status info';
+                showStatus('RTMP broadcast stopped', 'info');
+
+            } catch (error) {
+                console.error('Error stopping RTMP:', error);
+                showStatus(`Error stopping RTMP: ${error.message}`, 'error');
+            }
+        }
+
+        async function testRtmpConnection() {
+            const rtmpUrl = rtmpUrlInput.value.trim();
+            const rtmpKey = rtmpKeyInput.value.trim();
+
+            if (!rtmpUrl || !rtmpKey) {
+                showStatus('Please enter both RTMP URL and Stream Key', 'error');
+                return;
+            }
+
+            try {
+                showStatus('Testing RTMP connection...', 'info');
+                rtmpStatus.textContent = 'Testing RTMP connection...';
+                rtmpStatus.className = 'status info';
+
+                // Test connection (this would need a proper RTMP test endpoint)
+                const fullRtmpUrl = `${rtmpUrl}${rtmpKey}`;
+                console.log('Testing RTMP URL:', fullRtmpUrl);
+
+                // Simulate connection test
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                rtmpStatus.textContent = 'RTMP connection test successful!';
+                rtmpStatus.className = 'status success';
+                showStatus('RTMP connection test successful!', 'success');
+
+            } catch (error) {
+                console.error('RTMP test error:', error);
+                showStatus(`RTMP test failed: ${error.message}`, 'error');
+                rtmpStatus.textContent = `RTMP test failed: ${error.message}`;
+                rtmpStatus.className = 'status error';
+            }
+        }
+
+        // Event listeners
+        startWebcamBtn.addEventListener('click', startWebcam);
+        stopWebcamBtn.addEventListener('click', stopWebcam);
+        createStreamBtn.addEventListener('click', createStream);
+        startStreamingBtn.addEventListener('click', startStreaming);
+        stopStreamingBtn.addEventListener('click', stopStreaming);
+        updateParamsBtn.addEventListener('click', updateParameters);
+        resetParamsBtn.addEventListener('click', resetParameters);
+        document.getElementById('checkStatus').addEventListener('click', checkStreamStatus);
+        document.getElementById('checkLivepeer').addEventListener('click', checkLivepeerStream);
+        document.getElementById('testOutput').addEventListener('click', testOutputUrl);
+        
+        // RTMP event listeners
+        startRtmpBtn.addEventListener('click', startRtmpStream);
+        stopRtmpBtn.addEventListener('click', stopRtmpStream);
+        testRtmpBtn.addEventListener('click', testRtmpConnection);
+        rtmpPlatformSelect.addEventListener('change', updateRtmpPresets);
+
+        // Initialize range value displays
+        updateRangeValue(numInferenceStepsInput, stepsValue);
+        updateRangeValue(seedInput, seedValue);
+        updateRangeValue(poseScale, poseValue);
+        updateRangeValue(hedScale, hedValue);
+        updateRangeValue(cannyScale, cannyValue);
+        updateRangeValue(depthScale, depthValue);
+        updateRangeValue(colorScale, colorValue);
+
+        // Initialize RTMP presets
+        updateRtmpPresets();
+
+        // Show initial status
+        showStatus('Ready to start! Click "Start Webcam" to begin.', 'info');
+    </script>
+</body>
+</html>

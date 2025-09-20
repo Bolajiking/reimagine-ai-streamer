@@ -1,0 +1,42 @@
+{
+  "name": "reimagine-ai-streamer",
+  "version": "1.0.0",
+  "description": "Real-time AI video transformation application using StreamDiffusion",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "dev": "python3 -m http.server 8000",
+    "serve": "python3 server.py",
+    "deploy": "./deploy.sh"
+  },
+  "keywords": [
+    "ai",
+    "streaming",
+    "webrtc",
+    "rtmp",
+    "streamdiffusion",
+    "livepeer",
+    "webcam",
+    "real-time",
+    "video",
+    "transformation"
+  ],
+  "author": "REIMAGINE Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/reimagine-ai-streamer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/reimagine-ai-streamer/issues"
+  },
+  "homepage": "https://yourusername.github.io/reimagine-ai-streamer",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
