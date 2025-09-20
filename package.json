@@ -25,12 +25,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/reimagine-ai-streamer.git"
+    "url": "https://github.com/Bolajiking/reimagine-ai-streamer.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/reimagine-ai-streamer/issues"
+    "url": "https://github.com/Bolajiking/reimagine-ai-streamer/issues"
   },
-  "homepage": "https://yourusername.github.io/reimagine-ai-streamer",
+  "homepage": "https://bolajiking.github.io/reimagine-ai-streamer",
   "engines": {
     "node": ">=14.0.0"
   },
